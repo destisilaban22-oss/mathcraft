@@ -1,1 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MathCraft: Matematika Kelas 8</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;font:24px "VT323",monospace;color:#fff;background:linear-gradient(#8ECDF5 0 72%,#5B8C2A 72% 75%,#6B4A2F 75%) fixed;padding:16px}
+main{max-width:560px;margin:0 auto}
+h1,h2,.go,.hud,.bar button{font-family:"Press Start 2P",monospace}
+.panel{background:#3a3a3a;border:4px solid #1c1c1c;box-shadow:inset 4px 4px 0 #555,inset -4px -4px 0 #272727;padding:20px;margin-bottom:16px}
+h1{font-size:20px;line-height:1.5;margin:0 0 6px;text-shadow:3px 3px 0 #1c1c1c}
+h2{font-size:14px;line-height:1.6;margin:0 0 12px}
+p{margin:0 0 14px;line-height:1.2}.sub{color:#1c1c1c;font-size:22px}
+.blk{--c:#888;width:64px;height:64px;border:4px solid #1c1c1c;flex:none;background:conic-gradient(rgba(0,0,0,.14) 25%,transparent 0 50%,rgba(0,0,0,.14) 0 75%,transparent 0) 0 0/16px 16px,var(--c);box-shadow:inset 6px 6px 0 rgba(255,255,255,.28),inset -6px -6px 0 rgba(0,0,0,.28)}
+.blk.sm{width:26px;height:26px;border-width:3px;box-shadow:inset 3px 3px 0 rgba(255,255,255,.28),inset -3px -3px 0 rgba(0,0,0,.28)}
+button{font:inherit;color:#fff;cursor:pointer}
+.go{font-size:13px;line-height:1.5;background:#5B8C2A;border:4px solid #1c1c1c;padding:14px 18px;box-shadow:inset 4px 4px 0 #86bf4a,inset -4px -4px 0 #3b6118}
+button:focus-visible,input:focus-visible{outline:4px solid #3DE0D0;outline-offset:2px}
+.bar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0 16px}
+.bar button{font-size:8px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 2px;background:#555;border:4px solid #1c1c1c;box-shadow:inset 3px 3px 0 #7a7a7a,inset -3px -3px 0 #3a3a3a}
+.bar button.on{border-color:#fff}
+.hud{display:flex;justify-content:space-between;font-size:12px;margin-bottom:16px}
+.full{color:#e5483a}.empty{color:#777}
+.target{display:flex;align-items:center;gap:14px;margin-bottom:14px}.topic{color:#3DE0D0}
+#q{font-size:28px;line-height:1.15;margin:0 0 16px}
+#opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#opts button{background:#555;border:4px solid #1c1c1c;box-shadow:inset 3px 3px 0 #7a7a7a,inset -3px -3px 0 #3a3a3a;padding:10px;font-size:28px}
+#opts button:disabled{cursor:default}
+#opts .ok{background:#3f7d20}#opts .no{background:#9a2f27}
+#fb,.out{background:#222;border:4px solid #1c1c1c;padding:12px;margin:12px 0;line-height:1.2}
+#fb b,.out b{font-weight:400;color:#F2C230}
+#inv,#inv2{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.chip{display:flex;align-items:center;gap:6px}
+label{display:block;margin-bottom:10px}label b{color:#F2C230;font-weight:400}
+input[type=range]{width:100%;accent-color:#5B8C2A;display:block}
+.eq{margin-bottom:10px}.eq input{width:66px;font:inherit;font-size:24px;padding:4px;background:#222;color:#fff;border:3px solid #1c1c1c}
+svg{display:block;width:100%;max-width:340px;margin:12px auto;background:#222;border:4px solid #1c1c1c}
+svg:empty{display:none}svg text{font:20px "VT323",monospace;fill:#fff}
+.break{animation:brk .5s steps(5) forwards}.shake{animation:shk .4s linear}
+@keyframes brk{to{transform:scale(0);opacity:0}}@keyframes shk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@media(prefers-reduced-motion:reduce){.break,.shake{animation:none}}
+@media(max-width:420px){#opts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>MathCraft</h1>
+<p class="sub">Matematika kelas 8 ala Minecraft. Pilih tool di bawah.</p>
+<nav class="bar" id="bar"></nav>
+
+<section id="t-kuis">
+  <div id="start" class="panel">
+    <h2>Tambang Matematika</h2>
+    <p>Jawab 10 soal acak untuk menambang blok dari kayu sampai berlian. Kamu punya 3 nyawa. Soal mencakup Pythagoras, persamaan linear, fungsi, bangun ruang, dan lingkaran.</p>
+    <button class="go" onclick="start()">Mulai menambang</button>
+  </div>
+  <div id="game" hidden>
+    <div class="hud"><span id="prog"></span><span id="hearts"></span></div>
+    <div class="panel">
+      <div class="target"><div id="target" class="blk"></div><div><div id="tname"></div><div id="topic" class="topic"></div></div></div>
+      <p id="q"></p><div id="opts"></div><div id="fb" hidden></div>
+      <button id="next" class="go" hidden onclick="next()"></button>
+    </div>
+    <div class="panel"><div id="inv"></div></div>
+  </div>
+  <div id="end" class="panel" hidden>
+    <h2 id="rank"></h2><p id="score"></p><div id="inv2" style="margin-bottom:18px"></div>
+    <button class="go" onclick="start()">Main lagi</button>
+  </div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const f=n=>String(+n.toFixed(2)).replace(".",",");
+const sl=([id,l,min,max,v])=>`<label>${l} = <b id="${id}v">${v}</b><input type="range" id="${id}" min="${min}" max="${max}" value="${v}"></label>`;
+const eq=i=>`<div class="eq"><input id="a${i}" type="number" value="1">x + <input id="b${i}" type="number" value="${i==1?1:-1}">y = <input id="c${i}" type="number" value="${i==1?7:1}"></div>`;
+const T=[
+{id:"kuis",n:"Kuis",c:"#F2C230"},
+{id:"pyth",n:"Pythagoras",c:"#8A8A8A",t:"Teorema Pythagoras",vb:"0 0 300 240",ctl:[["a","Sisi tegak a",1,12,3],["b","Sisi tegak b",1,12,4]],
+run:v=>{const{a,b}=v,q=a*a+b*b,c=Math.sqrt(q),x1=30+b*18,y2=220-a*18;
+return[`<polygon points="30,220 ${x1},220 30,${y2}" fill="#5B8C2A" stroke="#fff" stroke-width="3"/><path d="M30 206h14v14" fill="none" stroke="#fff" stroke-width="2"/><text x="8" y="${(220+y2)/2}">a</text><text x="${(30+x1)/2}" y="238">b</text><text x="${(30+x1)/2+8}" y="${(220+y2)/2-6}">c</text>`,
+`a² + b² = ${a*a} + ${b*b} = ${q}<br>c = √${q} = ${f(c)}${Number.isInteger(c)?"<br><b>Tripel Pythagoras!</b>":""}`]}},
+{id:"garis",n:"Grafik garis",c:"#3DE0D0",t:"Gradien dan grafik y = mx + c",ctl:[["m","Gradien m",-5,5,2],["k","Konstanta c",-5,5,1],["x","Nilai x",-6,6,2]],
+run:v=>{const{m,k,x}=v;let g="";for(let i=-6;i<=6;i++)g+=`<path d="M${150+i*25} 0V300M0 ${150+i*25}H300" stroke="${i?"#444":"#fff"}"/>`;
+const P=(X,Y)=>`${150+X*25},${150-Y*25}`;
+return[g+`<polyline points="${P(-6,-6*m+k)} ${P(6,6*m+k)}" fill="none" stroke="#3DE0D0" stroke-width="3"/><circle cx="${150+x*25}" cy="${150-(m*x+k)*25}" r="6" fill="#F2C230"/>`,
+`y = ${m}x ${k<0?"−":"+"} ${Math.abs(k)}<br>Gradien = ${m}<br>Memotong sumbu y di (0, ${k})<br>${m?"Memotong sumbu x di ("+f(-k/m)+", 0)":"Sejajar sumbu x"}<br>f(${x}) = ${f(m*x+k)}`]}},
+{id:"ruang",n:"Bangun ruang",c:"#8B5E34",t:"Kubus dan balok",ctl:[["p","Panjang",1,10,5],["l","Lebar",1,10,4],["t","Tinggi",1,10,3]],
+run:v=>{const{p,l,t}=v;return["",`<b>${p==l&&l==t?"Kubus":"Balok"}</b> ${p} × ${l} × ${t}<br>Volume = p × l × t = ${p*l*t}<br>Luas permukaan = 2(pl + pt + lt) = ${2*(p*l+p*t+l*t)}<br>Jumlah panjang rusuk = 4(p + l + t) = ${4*(p+l+t)}<br>Muat ${p*l*t} blok Minecraft ukuran 1 × 1 × 1.`]}},
+{id:"lingk",n:"Lingkaran",c:"#3a78c9",t:"Keliling dan luas lingkaran",ctl:[["r","Jari-jari r",1,14,7]],
+run:v=>{const r=v.r;return[`<circle cx="150" cy="150" r="${r*10}" fill="#3a78c9" stroke="#fff" stroke-width="3"/><path d="M150 150H${150+r*10}" stroke="#F2C230" stroke-width="3"/><circle cx="150" cy="150" r="4" fill="#fff"/><text x="${150+r*5-4}" y="140">r</text>`,
+`π = 22/7<br>Keliling = 2πr = ${f(44/7*r)}<br>Luas = πr² = ${f(22/7*r*r)}<br>π = 3,14<br>Keliling = ${f(6.28*r)}<br>Luas = ${f(3.14*r*r)}`]}},
+{id:"spldv",n:"SPLDV",c:"#C0392B",t:"Sistem persamaan linear dua variabel",ids:["a1","b1","c1","a2","b2","c2"],html:eq(1)+eq(2),
+run:v=>{const D=v.a1*v.b2-v.a2*v.b1;if(!D)return["","Tidak ada satu penyelesaian: kedua garis sejajar atau berimpit."];
+const x=(v.c1*v.b2-v.c2*v.b1)/D,y=(v.a1*v.c2-v.a2*v.b1*0-v.a2*v.c1)/D;
+return["",`x = ${f(x)}<br>y = ${f(y)}<br>Cek 1: ${f(v.a1*x+v.b1*y)} = ${v.c1}<br>Cek 2: ${f(v.a2*x+v.b2*y)} = ${v.c2}`]}}
+];
+const M=document.querySelector("main");
+T.forEach(t=>{
+  const b=document.createElement("button");b.id="b-"+t.id;
+  b.innerHTML=`<span class="blk sm" style="--c:${t.c}"></span>${t.n}`;b.onclick=()=>tab(t.id);$("bar").appendChild(b);
+  if(!t.run)return;
+  const s=document.createElement("section");s.id="t-"+t.id;s.className="panel";s.hidden=true;
+  s.innerHTML=`<h2>${t.t}</h2>${t.html||t.ctl.map(sl).join("")}<svg id="s-${t.id}" viewBox="${t.vb||"0 0 300 300"}"></svg><div class="out" id="o-${t.id}"></div>`;
+  M.appendChild(s);
+  const ids=t.ids||t.ctl.map(c=>c[0]);
+  const go=()=>{const v={};ids.forEach(i=>{v[i]=+$(i).value;if($(i+"v"))$(i+"v").textContent=v[i];});const r=t.run(v);$("s-"+t.id).innerHTML=r[0];$("o-"+t.id).innerHTML=r[1];};
+  ids.forEach(i=>$(i).oninput=go);go();
+});
+function tab(id){T.forEach(t=>{$("t-"+t.id).hidden=t.id!==id;$("b-"+t.id).classList.toggle("on",t.id===id);});}
+tab("kuis");
+
+// Kuis. Jawaban benar selalu di o[0]; pilihan diacak saat ditampilkan.
+const BANK=[
+{t:"Teorema Pythagoras",q:"Segitiga siku-siku punya sisi tegak 6 dan 8. Berapa panjang sisi miringnya?",o:["10","12","14","9"],e:"6² + 8² = 100, jadi sisi miring = √100 = 10."},
+{t:"Teorema Pythagoras",q:"Sisi miring segitiga siku-siku 13 dan satu sisi tegaknya 5. Berapa sisi tegak lainnya?",o:["12","8","10","11"],e:"13² − 5² = 169 − 25 = 144, jadi sisinya 12."},
+{t:"Teorema Pythagoras",q:"Tangga 10 m disandarkan ke dinding. Kaki tangga berjarak 6 m dari dinding. Setinggi berapa ujung tangga?",o:["8 m","7 m","9 m","6 m"],e:"10² − 6² = 64, jadi tingginya √64 = 8 m."},
+{t:"Teorema Pythagoras",q:"Manakah yang merupakan tripel Pythagoras?",o:["5, 12, 13","4, 5, 7","6, 7, 8","7, 8, 9"],e:"5² + 12² = 25 + 144 = 169 = 13²."},
+{t:"Sistem persamaan linear",q:"Jika x + y = 7 dan x − y = 1, berapa nilai x?",o:["4","3","5","6"],e:"Jumlahkan kedua persamaan: 2x = 8, jadi x = 4."},
+{t:"Sistem persamaan linear",q:"Jika 2x + y = 11 dan x = 3, berapa nilai y?",o:["5","3","4","6"],e:"2(3) + y = 11, jadi y = 5."},
+{t:"Sistem persamaan linear",q:"Pedang dan kapak harganya 9 emerald. Pedang lebih mahal 3 emerald dari kapak. Berapa harga pedang?",o:["6 emerald","5 emerald","7 emerald","4 emerald"],e:"p + k = 9 dan p − k = 3, maka 2p = 12 dan p = 6."},
+{t:"Fungsi dan gradien",q:"Berapa gradien garis yang melalui (0, 0) dan (2, 6)?",o:["3","2","4","6"],e:"Gradien = (6 − 0) ÷ (2 − 0) = 3."},
+{t:"Fungsi dan gradien",q:"Jika f(x) = 2x + 3, berapa nilai f(4)?",o:["11","9","10","14"],e:"f(4) = 2(4) + 3 = 11."},
+{t:"Fungsi dan gradien",q:"Berapa gradien garis y = −3x + 5?",o:["−3","3","5","−5"],e:"Pada y = mx + c, gradiennya m, yaitu −3."},
+{t:"Bangun ruang sisi datar",q:"Sebuah blok berbentuk kubus dengan rusuk 4 satuan. Berapa volumenya?",o:["64","16","48","12"],e:"Volume kubus = 4 × 4 × 4 = 64."},
+{t:"Bangun ruang sisi datar",q:"Berapa luas permukaan kubus dengan rusuk 3?",o:["54","27","36","18"],e:"Kubus punya 6 sisi, jadi 6 × 3² = 54."},
+{t:"Bangun ruang sisi datar",q:"Sebuah balok berukuran 5 × 4 × 3. Berapa volumenya?",o:["60","12","47","80"],e:"Volume balok = 5 × 4 × 3 = 60."},
+{t:"Bangun ruang sisi datar",q:"Berapa banyak rusuk pada sebuah kubus?",o:["12","8","6","10"],e:"Kubus punya 12 rusuk, 8 titik sudut, dan 6 sisi."},
+{t:"Lingkaran",q:"Berapa keliling lingkaran berjari-jari 7? (π = 22/7)",o:["44","22","154","14"],e:"K = 2 × 22/7 × 7 = 44."},
+{t:"Lingkaran",q:"Berapa luas lingkaran berjari-jari 14? (π = 22/7)",o:["616","88","154","308"],e:"L = 22/7 × 14 × 14 = 616."}
+];
+const BL=[["Kayu","#8B5E34"],["Kayu","#8B5E34"],["Kayu","#8B5E34"],["Batu","#8A8A8A"],["Batu","#8A8A8A"],["Batu","#8A8A8A"],["Besi","#C9A98C"],["Besi","#C9A98C"],["Emas","#F2C230"],["Berlian","#3DE0D0"]];
+const COL={Kayu:"#8B5E34",Batu:"#8A8A8A",Besi:"#C9A98C",Emas:"#F2C230",Berlian:"#3DE0D0"};
+let S;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function show(n){["start","game","end"].forEach(x=>$(x).hidden=x!==n);window.scrollTo(0,0);}
+const hh=()=>'<span class="full">'+"♥".repeat(S.hearts)+'</span><span class="empty">'+"♥".repeat(3-S.hearts)+'</span>';
+function start(){S={qs:shuffle(BANK).slice(0,10),i:0,hearts:3,got:[],ok:0};show("game");render();}
+function inv(el){const c={};S.got.forEach(n=>c[n]=(c[n]||0)+1);
+  el.innerHTML=Object.keys(c).length?Object.keys(c).map(n=>`<span class="chip"><span class="blk sm" style="--c:${COL[n]}"></span>${n} ×${c[n]}</span>`).join(""):"Belum ada blok. Jawab soal untuk mulai menambang.";}
+function render(){
+  const q=S.qs[S.i],b=BL[S.i];
+  $("prog").textContent="Soal "+(S.i+1)+"/10";$("hearts").innerHTML=hh();
+  $("target").className="blk";$("target").style.setProperty("--c",b[1]);
+  $("tname").textContent="Blok "+b[0];$("topic").textContent=q.t;$("q").textContent=q.q;
+  $("fb").hidden=true;$("next").hidden=true;
+  const o=$("opts");o.innerHTML="";
+  shuffle(q.o).forEach(v=>{const x=document.createElement("button");x.textContent=v;x.onclick=()=>answer(x,v);o.appendChild(x);});
+  inv($("inv"));
+}
+function answer(btn,v){
+  const q=S.qs[S.i],b=BL[S.i],right=v===q.o[0];
+  [...$("opts").children].forEach(x=>{x.disabled=true;if(x.textContent===q.o[0])x.classList.add("ok");});
+  if(right){S.ok++;S.got.push(b[0]);$("target").classList.add("break");$("fb").innerHTML="<b>Tepat!</b> Kamu mendapat blok "+b[0]+". "+q.e;}
+  else{S.hearts--;btn.classList.add("no");$("target").classList.add("shake");$("fb").innerHTML="<b>Belum tepat.</b> "+q.e;}
+  $("hearts").innerHTML=hh();inv($("inv"));$("fb").hidden=false;
+  $("next").textContent=(S.hearts===0||S.i===9)?"Lihat hasil":"Tambang lagi";$("next").hidden=false;
+}
+function next(){if(S.hearts===0||S.i===9)finish();else{S.i++;render();}}
+function finish(){
+  $("rank").textContent=S.ok>=9?"Raja Tambang":S.ok>=7?"Penambang Ahli":S.ok>=4?"Penambang Pemula":"Baru Mulai Menggali";
+  $("score").textContent="Skor "+S.ok*10+" dari 100. Kamu menjawab benar "+S.ok+" soal."+(S.hearts===0?" Nyawamu habis, coba lagi!":"");
+  inv($("inv2"));show("end");
+}
+</script>
+</body>
+</html>
 
